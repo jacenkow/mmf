@@ -392,6 +392,8 @@ class MultiLoss(nn.Module):
 
     def __init__(self, params):
         super().__init__()
+        self.device = torch.device("cuda") if torch.cuda.is_available() \
+            else torch.device("cpu")
         self.losses = []
         self.losses_weights = []
 
@@ -417,9 +419,14 @@ class MultiLoss(nn.Module):
 
         """
         loss = 0
+
         for idx, loss_fn in enumerate(self.losses):
-            value = loss_fn(sample_list, model_output, *args, **kwargs)
+            loss_dict = loss_fn(sample_list, model_output, *args, **kwargs)
+            loss_name = list(loss_dict.keys())[0]
+            value = loss_dict[loss_name].to(self.device)
+
             loss += self.losses_weights[idx] * value
+
         return loss
 
 
