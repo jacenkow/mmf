@@ -169,7 +169,10 @@ class TrainerTrainingLoopMixin(ABC):
         return report
 
     def _forward(self, batch: Tensor) -> Dict[str, Any]:
+        batch.add_field("training_status",
+                        (self.num_updates, self.max_updates))  # Inject.
         prepared_batch = self.dataset_loader.prepare_batch(batch)
+
         # Move the sample list to device if it isn't as of now.
         prepared_batch = to_device(prepared_batch, self.device)
         self.profile("Batch prepare time")
